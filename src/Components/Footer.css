@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@700&display=swap');
+
+
+.footer {
+    background-color: #f5f5f5;
+    color: #fff;
+    padding: 10px 0;
+    text-align: center;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.7);
+  }
+  
+
+  
+  .add-restaurant-button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #fff;
+    background-color: #0bc9e2;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin: 0;
+    font-size: 18px;
+    color: #ffffff;
+    font-family: 'Ubuntu', sans-serif;
+  }
+  
+  .add-restaurant-button:hover {
+    background-color: #009ee7;
+  }
+  
+  .add-restaurant-button:active {
+    background-color: #3f24d9;
+  }
+  

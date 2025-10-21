@@ -1,0 +1,38 @@
+.admin-container {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .admin-container form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 30px;
+  }
+  
+  .admin-container input, 
+  .admin-container select {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  
+  .admin-error {
+    text-align: center;
+    padding: 50px;
+    color: red;
+    font-size: 1.2em;
+  }
+  
+  .lugares-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+  }
+  
+  .lugar-item {
+    border: 1px solid #eee;
+    padding: 15px;
+    border-radius: 8px;
+  }
