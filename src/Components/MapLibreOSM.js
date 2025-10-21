@@ -196,7 +196,8 @@ const MapLibreOSM = ({ lugares, filtroTipoComida }) => {
       container: mapContainer.current,
       style: osmStyle,
       center: [-74.066, 4.603],
-      zoom: 17
+      zoom: 17,
+      attributionControl: false
     });
 
     map.current = instance;
@@ -425,7 +426,7 @@ const MapLibreOSM = ({ lugares, filtroTipoComida }) => {
 
   return (
     <>
-      <div ref={mapContainer} style={{ width: '100%', height: '100vh' }} />
+      <div ref={mapContainer} className="map-container" />
       {activePoint && (
         <LugarDetail
           {...activePoint}
