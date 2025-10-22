@@ -448,7 +448,7 @@ const MapLibreOSM = ({ lugares, filtroTipoComida, reloadRestaurants }) => {
   const handleSelectRestaurantFromCluster = (restaurant) => {
     setClusterModalData(null);
     setActivePoint(toActivePoint(restaurant));
-    focusOnCoordinates(restaurant.coordinates.lng, restaurant.coordinates.lat);
+    focusOnCoordinates(restaurant.coordinates.lng, restaurant.coordinates.lat, 18.5);
   };
 
   const handleRatingUpdated = (restaurantId, newAverage, newCount) => {

@@ -13,6 +13,8 @@ import {
   runTransaction,
   serverTimestamp
 } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { app } from '../firebase-config';
 import './LugarDetail.css';
 
 const Stars = ({ rating }) => {
@@ -72,6 +74,7 @@ const LugarDetail = (props) => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [userEmail, setUserEmail] = useState('');
+  const [userUid, setUserUid] = useState('');
   const [userRating, setUserRating] = useState(null);
   const [hoverRating, setHoverRating] = useState(null);
   const [displayRating, setDisplayRating] = useState(
@@ -86,7 +89,23 @@ const LugarDetail = (props) => {
 
   useEffect(() => {
     const email = localStorage.getItem('userEmail') || '';
-    setUserEmail(email);
+    if (email) {
+      setUserEmail(email);
+    }
+    const auth = getAuth(app);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserEmail(user.email ?? email ?? '');
+        setUserUid(user.uid ?? '');
+      } else {
+        setUserUid('');
+        if (!email) {
+          setUserEmail('');
+        }
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -156,6 +175,10 @@ const LugarDetail = (props) => {
     if (!newComment.trim()) {
       return;
     }
+    if (!userEmail || !userUid) {
+      setCommentError('Debes iniciar sesion para comentar.');
+      return;
+    }
 
     try {
       const db = getFirestore();
@@ -165,7 +188,8 @@ const LugarDetail = (props) => {
         Contenido: newComment,
         Restaurante: restauranteRef,
         fecha: Timestamp.now(),
-        email: userEmail
+        email: userEmail,
+        uid: userUid
       });
 
       setNewComment('');
@@ -187,15 +211,19 @@ const LugarDetail = (props) => {
     }
   };
 
-  const handleDeleteComment = async (commentId, commentAuthor) => {
-    if (!userEmail) {
+  const handleDeleteComment = async (commentId, commentAuthorEmail, commentAuthorUid) => {
+    if (!userEmail || !userUid) {
       setCommentError('Debes iniciar sesion para administrar comentarios.');
       return;
     }
 
     const normalizedUser = userEmail.trim().toLowerCase();
-    const normalizedAuthor = (commentAuthor ?? '').trim().toLowerCase();
-    if (!commentId || normalizedUser !== normalizedAuthor) {
+    const normalizedAuthor = (commentAuthorEmail ?? '').trim().toLowerCase();
+    const isOwnerByEmail = normalizedUser && normalizedAuthor && normalizedUser === normalizedAuthor;
+    const isOwnerByUid =
+      userUid && commentAuthorUid && userUid === commentAuthorUid;
+
+    if (!commentId || (!isOwnerByEmail && !isOwnerByUid)) {
       setCommentError('Solo puedes borrar tus propios comentarios.');
       return;
     }
@@ -368,19 +396,20 @@ const LugarDetail = (props) => {
                     ? ` - ${comment.fecha.toDate().toLocaleString()}`
                     : ''}
                 </small>
-                {userEmail &&
+                {(userUid && comment.uid && userUid === comment.uid) ||
+                (userEmail &&
                   userEmail.trim().toLowerCase() ===
-                    (comment.email ?? '').trim().toLowerCase() && (
-                    <button
-                      type="button"
-                      className="comment-delete"
-                      onClick={() =>
-                        handleDeleteComment(comment.id, comment.email)
-                      }
-                    >
-                      Eliminar
-                    </button>
-                  )}
+                    (comment.email ?? '').trim().toLowerCase()) ? (
+                  <button
+                    type="button"
+                    className="comment-delete"
+                    onClick={() =>
+                      handleDeleteComment(comment.id, comment.email, comment.uid)
+                    }
+                  >
+                    Eliminar
+                  </button>
+                ) : null}
               </div>
             ))
           ) : (
