@@ -1,26 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import './Header.css';
 import logo from '../3.png';
 import { getAuth, signOut } from 'firebase/auth';
 import { app } from '../firebase-config';
-import { normalizeBoolean } from '../utils/restaurantUtils';
 
 const Header = ({
-  restaurants,
-  setFilteredRestaurants,
   userEmail,
-  onLogout,
   isAdmin,
-  onToggleAdminPanel
+  onLogout,
+  onToggleAdminPanel,
+  onToggleFilters
 }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const auth = getAuth(app);
-
-  useEffect(() => {
-    if (Array.isArray(restaurants)) {
-      setFilteredRestaurants(restaurants);
-    }
-  }, [restaurants, setFilteredRestaurants]);
 
   const handleLogout = async () => {
     try {
@@ -29,106 +20,52 @@ const Header = ({
       console.error('Error al cerrar sesion', error);
     } finally {
       localStorage.removeItem('userEmail');
-      setIsMenuOpen(false);
       onLogout?.();
-      setFilteredRestaurants(restaurants);
     }
   };
 
-  const toggleMenu = () => {
-    setIsMenuOpen((prev) => !prev);
-  };
-
-  const closeMenu = () => {
-    setIsMenuOpen(false);
-  };
-
-  const filterByVegetariano = () => {
-    const filtered = restaurants.filter((item) =>
-      normalizeBoolean(item.vegetariano ?? item.menuVegetariano)
-    );
-    setFilteredRestaurants(filtered);
-    closeMenu();
-  };
-
-  const filterByDomicilios = () => {
-    const filtered = restaurants.filter((item) =>
-      normalizeBoolean(item.domicilios ?? item.domicilio)
-    );
-    setFilteredRestaurants(filtered);
-    closeMenu();
-  };
-
-  const filterByDescuento = () => {
-    const filtered = restaurants.filter((item) =>
-      normalizeBoolean(item.tiquetera ?? item.ticketera ?? item.descuento)
-    );
-    setFilteredRestaurants(filtered);
-    closeMenu();
-  };
-
-  const resetFilters = () => {
-    setFilteredRestaurants(restaurants);
-    closeMenu();
-  };
-
-  const handleAdminClick = () => {
-    closeMenu();
-    onToggleAdminPanel?.();
-  };
-
   return (
-    <>
-      <header className="header">
-        <div className="header-content">
-          <button className="hamburger-menu" onClick={toggleMenu}>
-            &#9776;
-          </button>
-          <div className="logo-container" onClick={resetFilters}>
-            <img className="LogoHeader" src={logo} alt="Logo" />
-          </div>
-        </div>
-      </header>
+    <header className="topbar">
+      <button
+        className="topbar__filters"
+        type="button"
+        onClick={onToggleFilters}
+      >
+        Filtros
+      </button>
 
-      <nav className={`nav ${isMenuOpen ? 'open' : ''}`}>
-        <button className="close-menu" onClick={closeMenu}>
-          &times;
-        </button>
-        <ul className="nav-list">
-          <li className="nav-item">
-            <button className="nav-link" onClick={filterByVegetariano}>
-              Vegetariano
-            </button>
-          </li>
-          <li className="nav-item">
-            <button className="nav-link" onClick={filterByDomicilios}>
-              Domicilios
-            </button>
-          </li>
-          <li className="nav-item">
-            <button className="nav-link" onClick={filterByDescuento}>
-              Descuentos/Tiquetera
-            </button>
-          </li>
-          <li className="nav-item">
-            <button className="nav-link reset-button" onClick={resetFilters}>
-              Quitar filtros
-            </button>
-          </li>
-        </ul>
-        <div className="profile-section">
-          <p className="user-email">{userEmail}</p>
-          {isAdmin && (
-            <button className="logout-button" onClick={handleAdminClick}>
-              Panel admin
-            </button>
-          )}
-          <button className="logout-button" onClick={handleLogout}>
-            Cerrar sesion
-          </button>
+      <div className="topbar__brand">
+        <img className="topbar__logo" src={logo} alt="AndesEats" />
+        <div className="topbar__brand-text">
+          <span className="topbar__brand-name">AndesEats</span>
+          <span className="topbar__brand-tagline">
+            Explora los mejores sabores cerca de la U
+          </span>
         </div>
-      </nav>
-    </>
+      </div>
+
+      <div className="topbar__actions">
+        <span className="topbar__email" title={userEmail}>
+          {userEmail}
+        </span>
+        {isAdmin && (
+          <button
+            type="button"
+            className="topbar__button"
+            onClick={onToggleAdminPanel}
+          >
+            Panel admin
+          </button>
+        )}
+        <button
+          type="button"
+          className="topbar__button topbar__button--primary"
+          onClick={handleLogout}
+        >
+          Cerrar sesi&oacute;n
+        </button>
+      </div>
+    </header>
   );
 };
 

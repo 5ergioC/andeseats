@@ -1,4 +1,4 @@
-import React, { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useState } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { collection, getDocs, getFirestore } from 'firebase/firestore';
 import { app } from './firebase-config';
@@ -6,6 +6,7 @@ import MapLibreOSM from './Components/MapLibreOSM';
 import Auth from './Components/Auth';
 import Header from './Components/Header';
 import AdminPanel from './Components/AdminPanel';
+import FilterPanel from './Components/FilterPanel';
 import { normalizeRestaurantDoc } from './utils/restaurantUtils';
 import './App.css';
 
@@ -18,6 +19,7 @@ function AppContent() {
   const [filteredRestaurants, setFilteredRestaurants] = useState([]);
   const [isAdminPanelVisible, setIsAdminPanelVisible] = useState(false);
   const [loadingRestaurants, setLoadingRestaurants] = useState(false);
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const auth = getAuth(app);
   const db = getFirestore(app);
 
@@ -108,29 +110,31 @@ function AppContent() {
     setFilteredRestaurants([]);
   };
 
-  const mapRestaurants = useMemo(() => filteredRestaurants, [filteredRestaurants]);
-
   return (
     <div className="app">
       {isLoggedIn ? (
         <>
           <Header
-            restaurants={restaurants}
-            setFilteredRestaurants={setFilteredRestaurants}
             userEmail={userEmail}
             onLogout={handleLogout}
             isAdmin={isAdmin}
             onToggleAdminPanel={handleToggleAdminPanel}
+            onToggleFilters={() => setIsFilterPanelOpen((prev) => !prev)}
           />
-          <main className="app__map">
-            {loadingRestaurants ? (
-              <div className="app__loader">Cargando restaurantes...</div>
-            ) : (
-              <MapLibreOSM
-                lugares={mapRestaurants}
-                reloadRestaurants={loadRestaurants}
-              />
-            )}
+          <main className="app__main">
+            <FilterPanel
+              restaurants={restaurants}
+              setFilteredRestaurants={setFilteredRestaurants}
+              isMobileOpen={isFilterPanelOpen}
+              onClose={() => setIsFilterPanelOpen(false)}
+            />
+            <div className="app__map">
+              {loadingRestaurants ? (
+                <div className="app__loader">Cargando restaurantes...</div>
+              ) : (
+                <MapLibreOSM lugares={filteredRestaurants} />
+              )}
+            </div>
           </main>
           {isAdmin && isAdminPanelVisible && (
             <AdminPanel

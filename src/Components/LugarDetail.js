@@ -135,13 +135,27 @@ const LugarDetail = (props) => {
           ...commentDoc.data()
         }));
         setComments(comentariosList);
+
+        if (userEmail) {
+          const ownComment = comentariosList.find(
+            (comment) =>
+              (comment.email ?? '').toLowerCase() === userEmail.toLowerCase()
+          );
+
+          if (ownComment) {
+            const content = String(ownComment.Contenido ?? '');
+            setNewComment((prev) =>
+              prev && prev !== '' && prev !== content ? prev : content
+            );
+          }
+        }
       } catch (error) {
         console.error('Error fetching comments:', error);
       }
     };
 
     fetchComments();
-  }, [props.ID]);
+  }, [props.ID, userEmail]);
 
   useEffect(() => {
     const fetchUserRating = async () => {
@@ -334,6 +348,7 @@ const LugarDetail = (props) => {
   return (
     <div className="overlay">
       <div className="info-box">
+        <div className="info-box__grip" aria-hidden="true" />
         <h1>{props.Nombre}</h1>
         <div className="rating-summary">
           <Stars rating={displayRating} />
@@ -440,7 +455,7 @@ const LugarDetail = (props) => {
           className="close-btn"
           onClick={() => props.SetActivePoint(null)}
         >
-          Cerrar
+          &times;
         </button>
       </div>
     </div>

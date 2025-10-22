@@ -88,7 +88,7 @@ const toActivePoint = (restaurant) => ({
   HoraCierre: restaurant.horaCierre ?? 'No definido'
 });
 
-const MapLibreOSM = ({ lugares, filtroTipoComida, reloadRestaurants }) => {
+const MapLibreOSM = ({ lugares, filtroTipoComida }) => {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const [activePoint, setActivePoint] = useState(null);
@@ -200,14 +200,31 @@ const MapLibreOSM = ({ lugares, filtroTipoComida, reloadRestaurants }) => {
     };
   }, [lugares, filtroTipoComida]);
 
-  const focusOnCoordinates = (lng, lat, zoom = 17) => {
+  const getViewOffset = () => {
+    const width = window.innerWidth;
+
+    if (width <= 768) {
+      const sheetHeight = Math.min(window.innerHeight * 0.35, 260);
+      return [0, sheetHeight / 2];
+    }
+
+    const panelWidth = width <= 1100 ? 320 : 360;
+    const margin = width <= 1100 ? 24 : 36;
+    return [-(panelWidth / 2 + margin), 0];
+  };
+
+  const focusOnCoordinates = (lng, lat, zoom = 17, options = {}) => {
     if (!map.current || !Number.isFinite(lng) || !Number.isFinite(lat)) {
       return;
     }
 
-    map.current.flyTo({
+    const offset = options.offset ?? getViewOffset();
+
+    map.current.easeTo({
       center: [lng, lat],
       zoom,
+      offset,
+      duration: options.duration ?? 800,
       essential: true
     });
   };
@@ -265,7 +282,8 @@ const MapLibreOSM = ({ lugares, filtroTipoComida, reloadRestaurants }) => {
           focusOnCoordinates(
             coordinates[0],
             coordinates[1],
-            Math.min((map.current?.getZoom?.() ?? 16) + 1, 19)
+            Math.min((map.current?.getZoom?.() ?? 16) + 1, 19),
+            { offset: [0, 0], duration: 600 }
           );
         }
       };
@@ -453,7 +471,7 @@ const MapLibreOSM = ({ lugares, filtroTipoComida, reloadRestaurants }) => {
     focusOnCoordinates(restaurant.coordinates.lng, restaurant.coordinates.lat, 18.5);
   };
 
-const handleRatingUpdated = (restaurantId, newAverage, newCount) => {
+  const handleRatingUpdated = (restaurantId, newAverage, newCount) => {
     setActivePoint((prev) => {
       if (!prev || prev.ID !== restaurantId) {
         return prev;
