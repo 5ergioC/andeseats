@@ -56,6 +56,7 @@
   border-radius: 12px;
   cursor: pointer;
   box-shadow: 0 10px 20px rgba(37, 99, 235, 0.18);
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .topbar__actions {
@@ -81,7 +82,8 @@
   padding: 8px 14px;
   font-size: 13px;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease,
+    box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .topbar__button:hover {
@@ -91,15 +93,24 @@
 }
 
 .topbar__button--primary {
-  background: #f97316;
-  border-color: #f97316;
-  color: #ffffff;
-  box-shadow: 0 12px 24px rgba(249, 115, 22, 0.25);
+  border: none;
+  background: linear-gradient(135deg, #f97316, #fb923c);
+  color: #0f172a;
+  font-weight: 700;
+  box-shadow: 0 12px 25px rgba(249, 115, 22, 0.32);
+  padding: 9px 16px;
 }
 
 .topbar__button--primary:hover {
-  background: #ea580c;
-  border-color: #ea580c;
+  background: linear-gradient(135deg, #fb923c, #fdba74);
+  color: #0f172a;
+  transform: translateY(-1px);
+  box-shadow: 0 16px 28px rgba(249, 115, 22, 0.35);
+}
+.topbar__filters:hover {
+  background: rgba(37, 99, 235, 0.92);
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.22);
+  transform: translateY(-1px);
 }
 
 @media (max-width: 900px) {
