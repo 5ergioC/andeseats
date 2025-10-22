@@ -1,0 +1,37 @@
+.circular-text {
+  --ct-size: clamp(240px, 45vw, 420px);
+  --ct-gap: clamp(12px, 2.5vw, 22px);
+  --ct-radius: calc(var(--ct-size) / 2 - var(--ct-gap));
+  --ct-shadow: 0 12px 32px rgba(15, 23, 42, 0.35);
+  position: relative;
+  width: var(--ct-size);
+  height: var(--ct-size);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #0f172a;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.3rem;
+  cursor: pointer;
+  transform-origin: center;
+  margin: 0 auto;
+  filter: drop-shadow(var(--ct-shadow));
+  transition: transform 0.4s ease, filter 0.4s ease;
+  will-change: transform;
+}
+
+.circular-text span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: center;
+  font-size: clamp(18px, 2.4vw, 28px);
+  pointer-events: none;
+  color: inherit;
+}
+
+.circular-text:hover {
+  transform: scale(1.01);
+  filter: drop-shadow(0 18px 42px rgba(15, 23, 42, 0.45));
+}

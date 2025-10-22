@@ -88,7 +88,7 @@ const toActivePoint = (restaurant) => ({
   HoraCierre: restaurant.horaCierre ?? 'No definido'
 });
 
-const MapLibreOSM = ({ lugares, filtroTipoComida, reloadRestaurants }) => {
+const MapLibreOSM = ({ lugares, filtroTipoComida }) => {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const [activePoint, setActivePoint] = useState(null);
@@ -200,14 +200,37 @@ const MapLibreOSM = ({ lugares, filtroTipoComida, reloadRestaurants }) => {
     };
   }, [lugares, filtroTipoComida]);
 
-  const focusOnCoordinates = (lng, lat, zoom = 17) => {
+  const getViewOffset = () => {
+    const canvas = map.current?.getCanvas();
+    const width = canvas?.clientWidth ?? window.innerWidth;
+    const height = canvas?.clientHeight ?? window.innerHeight;
+
+    if (width <= 768) {
+      const panelMargin = 12;
+      const sheetHeight = Math.min(height * 0.4, 320);
+      const totalBottom = sheetHeight + panelMargin;
+      return [0, -(totalBottom / 2)];
+    }
+
+    const panelMargin = width <= 1100 ? 12 : 16;
+    const panelWidth = width <= 1100 ? 340 : 380;
+    const totalLeft = panelWidth + panelMargin * 2;
+    const offsetX = totalLeft / 2;
+    return [offsetX, 0];
+  };
+
+  const focusOnCoordinates = (lng, lat, zoom = 17, options = {}) => {
     if (!map.current || !Number.isFinite(lng) || !Number.isFinite(lat)) {
       return;
     }
 
-    map.current.flyTo({
+    const offset = options.offset ?? getViewOffset();
+
+    map.current.easeTo({
       center: [lng, lat],
       zoom,
+      offset,
+      duration: options.duration ?? 800,
       essential: true
     });
   };
@@ -265,7 +288,8 @@ const MapLibreOSM = ({ lugares, filtroTipoComida, reloadRestaurants }) => {
           focusOnCoordinates(
             coordinates[0],
             coordinates[1],
-            Math.min((map.current?.getZoom?.() ?? 16) + 1, 19)
+            Math.min((map.current?.getZoom?.() ?? 16) + 1, 19),
+            { offset: [0, 0], duration: 600 }
           );
         }
       };
@@ -453,7 +477,7 @@ const MapLibreOSM = ({ lugares, filtroTipoComida, reloadRestaurants }) => {
     focusOnCoordinates(restaurant.coordinates.lng, restaurant.coordinates.lat, 18.5);
   };
 
-const handleRatingUpdated = (restaurantId, newAverage, newCount) => {
+  const handleRatingUpdated = (restaurantId, newAverage, newCount) => {
     setActivePoint((prev) => {
       if (!prev || prev.ID !== restaurantId) {
         return prev;
