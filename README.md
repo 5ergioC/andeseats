@@ -8,7 +8,7 @@ Andes Eats is a platform focused on providing restaurant recommendations that fi
 
 **Website URL**: [https://www.andeseats.co/](https://www.andeseats.co/)
 
-![image](<img width="1880" height="924" alt="image" src="https://github.com/user-attachments/assets/9833492c-0b59-4f63-a77f-3b304d60227d" />)
+![image](https://github.com/user-attachments/assets/9833492c-0b59-4f63-a77f-3b304d60227d)
 
 ## Features
 
