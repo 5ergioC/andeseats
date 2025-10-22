@@ -225,6 +225,10 @@ const MapLibreOSM = ({ lugares, filtroTipoComida, reloadRestaurants }) => {
 
     map.current = instance;
 
+    
+    instance.dragRotate.disable();
+    instance.touchZoomRotate.disableRotation();
+
     instance.addControl(new maplibregl.NavigationControl(), 'top-right');
     instance.addControl(new maplibregl.AttributionControl(), 'bottom-right');
 
