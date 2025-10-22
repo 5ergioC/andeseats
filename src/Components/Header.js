@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import './Header.css';
 import logo from '../3.png';
 import { getFirestore, collection, getDocs } from 'firebase/firestore';
+import { getAuth, signOut } from 'firebase/auth';
 import { app } from '../firebase-config';
 
 const Header = ({ setFilteredRestaurants }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [userEmail, setUserEmail] = useState('');
   const [restaurants, setRestaurants] = useState([]);
+  const auth = getAuth(app);
 
   const toBoolean = (value) => {
     if (typeof value === 'string') {
@@ -78,9 +80,17 @@ const Header = ({ setFilteredRestaurants }) => {
     }
   }, [setFilteredRestaurants]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('userEmail'); // Eliminar el email del localStorage
-    window.location.reload(); // Recargar la página para volver al estado inicial
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('Error al cerrar sesión', error);
+    } finally {
+      localStorage.removeItem('userEmail');
+      setUserEmail('');
+      setIsMenuOpen(false);
+      setFilteredRestaurants(restaurants);
+    }
   };
 
   const toggleMenu = () => {
