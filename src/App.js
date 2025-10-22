@@ -144,9 +144,7 @@ function AppContent() {
           )}
         </>
       ) : (
-        <div className="app__auth">
-          <Auth onLogin={handleLogin} />
-        </div>
+        <Auth onLogin={handleLogin} />
       )}
     </div>
   );

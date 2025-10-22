@@ -58,15 +58,6 @@ body,
   inset: 0;
 }
 
-.app__auth {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  width: 100%;
-}
-
 .map-attribution {
   position: absolute;
   right: 12px;
