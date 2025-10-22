@@ -19,6 +19,7 @@ const ClusterModal = ({ data, onClose, onSelect }) => {
         >
           ×
         </button>
+        <div className="cluster-panel__grip" aria-hidden="true" />
 
         <div className="cluster-panel__header">
           <h2 className="cluster-panel__title">

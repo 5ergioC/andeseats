@@ -59,6 +59,10 @@
   margin-bottom: 18px;
 }
 
+.cluster-panel__grip {
+  display: none;
+}
+
 .cluster-panel__title {
   margin: 0;
   font-size: 1.35rem;
@@ -159,6 +163,15 @@
     border-radius: 20px 20px 14px 14px;
     padding: 20px;
     box-shadow: 0 -10px 24px rgba(15, 23, 42, 0.22);
+  }
+
+  .cluster-panel__grip {
+    display: block;
+    width: 48px;
+    height: 5px;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.2);
+    margin: 0 auto 12px;
   }
 }
 

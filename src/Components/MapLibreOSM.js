@@ -201,16 +201,22 @@ const MapLibreOSM = ({ lugares, filtroTipoComida }) => {
   }, [lugares, filtroTipoComida]);
 
   const getViewOffset = () => {
-    const width = window.innerWidth;
+    const canvas = map.current?.getCanvas();
+    const width = canvas?.clientWidth ?? window.innerWidth;
+    const height = canvas?.clientHeight ?? window.innerHeight;
 
     if (width <= 768) {
-      const sheetHeight = Math.min(window.innerHeight * 0.35, 260);
-      return [0, sheetHeight / 2];
+      const panelMargin = 12;
+      const sheetHeight = Math.min(height * 0.4, 320);
+      const totalBottom = sheetHeight + panelMargin;
+      return [0, -(totalBottom / 2)];
     }
 
-    const panelWidth = width <= 1100 ? 320 : 360;
-    const margin = width <= 1100 ? 24 : 36;
-    return [-(panelWidth / 2 + margin), 0];
+    const panelMargin = width <= 1100 ? 12 : 16;
+    const panelWidth = width <= 1100 ? 340 : 380;
+    const totalLeft = panelWidth + panelMargin * 2;
+    const offsetX = totalLeft / 2;
+    return [offsetX, 0];
   };
 
   const focusOnCoordinates = (lng, lat, zoom = 17, options = {}) => {
