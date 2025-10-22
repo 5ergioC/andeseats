@@ -348,6 +348,16 @@ const LugarDetail = (props) => {
   return (
     <div className="overlay">
       <div className="info-box">
+        <div className="info-box__close">
+          <button
+            type="button"
+            className="info-box__close-btn"
+            aria-label="Cerrar detalle"
+            onClick={() => props.SetActivePoint(null)}
+          >
+            ×
+          </button>
+        </div>
         <div className="info-box__grip" aria-hidden="true" />
         <h1>{props.Nombre}</h1>
         <div className="rating-summary">
@@ -451,12 +461,6 @@ const LugarDetail = (props) => {
           {commentError && <p className="error">{commentError}</p>}
         </div>
 
-        <button
-          className="close-btn"
-          onClick={() => props.SetActivePoint(null)}
-        >
-          &times;
-        </button>
       </div>
     </div>
   );

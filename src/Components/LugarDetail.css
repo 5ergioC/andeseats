@@ -13,6 +13,7 @@
 
 .info-box {
   pointer-events: auto;
+  position: relative;
   width: 380px;
   max-width: calc(100% - 32px);
   height: calc(100% - 32px);
@@ -25,6 +26,39 @@
   flex-direction: column;
   padding: 24px;
   overflow-y: auto;
+}
+
+.info-box__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+}
+
+.info-box__close-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(148, 163, 184, 0.18);
+  color: #0f172a;
+  font-size: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.14);
+}
+
+.info-box__close-btn:hover {
+  background: rgba(59, 130, 246, 0.18);
+  transform: translateY(-1px);
+}
+
+.info-box__close-btn:active {
+  transform: translateY(0);
 }
 
 .info-box h1 {
@@ -260,11 +294,6 @@ h2 {
     border-radius: 20px 20px 14px 14px;
     padding: 20px;
     box-shadow: 0 -10px 24px rgba(15, 23, 42, 0.22);
-  }
-
-  .info-box .close-btn {
-    top: 12px;
-    right: 12px;
   }
 
   .rating-summary {
