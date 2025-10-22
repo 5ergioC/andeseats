@@ -3,6 +3,7 @@ import './Header.css';
 import logo from '../3.png';
 import { getAuth, signOut } from 'firebase/auth';
 import { app } from '../firebase-config';
+import { normalizeBoolean } from '../utils/restaurantUtils';
 
 const Header = ({
   restaurants,
@@ -44,7 +45,7 @@ const Header = ({
 
   const filterByVegetariano = () => {
     const filtered = restaurants.filter((item) =>
-      Boolean(item.vegetariano ?? item.menuVegetariano)
+      normalizeBoolean(item.vegetariano ?? item.menuVegetariano)
     );
     setFilteredRestaurants(filtered);
     closeMenu();
@@ -52,7 +53,7 @@ const Header = ({
 
   const filterByDomicilios = () => {
     const filtered = restaurants.filter((item) =>
-      Boolean(item.domicilios ?? item.domicilio)
+      normalizeBoolean(item.domicilios ?? item.domicilio)
     );
     setFilteredRestaurants(filtered);
     closeMenu();
@@ -60,7 +61,7 @@ const Header = ({
 
   const filterByDescuento = () => {
     const filtered = restaurants.filter((item) =>
-      Boolean(item.tiquetera ?? item.ticketera ?? item.descuento)
+      normalizeBoolean(item.tiquetera ?? item.ticketera ?? item.descuento)
     );
     setFilteredRestaurants(filtered);
     closeMenu();
@@ -106,7 +107,7 @@ const Header = ({
           </li>
           <li className="nav-item">
             <button className="nav-link" onClick={filterByDescuento}>
-              Descuentos
+              Descuentos/Tiquetera
             </button>
           </li>
           <li className="nav-item">

@@ -3,6 +3,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import maplibregl from 'maplibre-gl';
 import LugarDetail from './LugarDetail';
 import ClusterModal from './ClusterModal';
+import { normalizeCuisineList } from '../utils/restaurantUtils';
 
 const EMPTY_FEATURE_COLLECTION = {
   type: 'FeatureCollection',
@@ -55,7 +56,7 @@ const transformFeatureToRestaurant = (feature) => {
     vegetariano: toBoolean(properties.vegetariano ?? properties.menuVegetariano),
     descuento: toBoolean(properties.descuento),
     tiquetera: toBoolean(properties.tiquetera),
-    tipoComida: Array.isArray(properties.tipoComida) ? properties.tipoComida : [],
+    tipoComida: normalizeCuisineList(properties.tipoComida),
     horaApertura: properties.horaApertura ?? 'No definido',
     horaCierre: properties.horaCierre ?? 'No definido',
     coordinates: {
@@ -70,7 +71,10 @@ const toActivePoint = (restaurant) => ({
   Nombre: restaurant.nombre ?? 'Restaurante sin nombre',
   Direccion: restaurant.direccion ?? 'Direccion no disponible',
   Descripcion: restaurant.descripcion ?? '',
-  Contacto: restaurant.contacto ?? 'No definido',
+  Contacto:
+    typeof restaurant.contacto === 'string'
+      ? restaurant.contacto.trim()
+      : restaurant.contacto ?? '',
   Precio: restaurant.precio ?? 'No definido',
   Rating: restaurant.rating ?? 0,
   RatingCount: restaurant.ratingCount ?? 0,
@@ -79,6 +83,7 @@ const toActivePoint = (restaurant) => ({
     restaurant.menuVegetariano ?? restaurant.vegetariano ?? false,
   Descuento: restaurant.descuento ?? false,
   Tiquetera: restaurant.tiquetera ?? false,
+  TipoComida: normalizeCuisineList(restaurant.tipoComida),
   HoraApertura: restaurant.horaApertura ?? 'No definido',
   HoraCierre: restaurant.horaCierre ?? 'No definido'
 });
@@ -117,11 +122,8 @@ const MapLibreOSM = ({ lugares, filtroTipoComida, reloadRestaurants }) => {
 
     const filteredByTipo = filtroTipoComida
       ? baseList.filter((l) => {
-          const tipo = l.tipoComida;
-          if (Array.isArray(tipo)) {
-            return tipo.includes(filtroTipoComida);
-          }
-          return tipo === filtroTipoComida;
+          const tipos = normalizeCuisineList(l.tipoComida);
+          return tipos.includes(filtroTipoComida);
         })
       : baseList;
 
@@ -184,7 +186,7 @@ const MapLibreOSM = ({ lugares, filtroTipoComida, reloadRestaurants }) => {
             descuento:
               lugar.descuento ?? lugar.ticketera ?? lugar.tiquetera ?? false,
             tiquetera: lugar.tiquetera ?? lugar.ticketera ?? false,
-            tipoComida: Array.isArray(lugar.tipoComida) ? lugar.tipoComida : [],
+            tipoComida: normalizeCuisineList(lugar.tipoComida),
             horaApertura: lugar.horaApertura ?? 'No definido',
             horaCierre: lugar.horaCierre ?? 'No definido'
           }

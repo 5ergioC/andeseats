@@ -27,16 +27,41 @@ function AppContent() {
     setLoadingRestaurants(true);
     try {
       const snapshot = await getDocs(collection(db, 'Restaurante'));
-      const list = snapshot.docs
-        .map((doc) => normalizeRestaurantDoc(doc))
-        .filter((restaurant) => {
-          const lat = restaurant?.pos?.latitude;
-          const lng = restaurant?.pos?.longitude;
-          return Number.isFinite(lat) && Number.isFinite(lng);
-        });
+      const list = await Promise.all(
+        snapshot.docs.map(async (docSnap) => {
+          const base = normalizeRestaurantDoc(docSnap);
+          try {
+            const ratingsSnapshot = await getDocs(collection(docSnap.ref, 'ratings'));
+            let total = 0;
+            let count = 0;
+            ratingsSnapshot.forEach((ratingDoc) => {
+              const val = Number(ratingDoc.data()?.valor);
+              if (Number.isFinite(val)) {
+                total += val;
+                count += 1;
+              }
+            });
+            const average = count > 0 ? total / count : 0;
+            return {
+              ...base,
+              rating: average,
+              ratingCount: count,
+              ratingTotal: total
+            };
+          } catch (error) {
+            console.error('No se pudo cargar el rating del restaurante', docSnap.id, error);
+            return base;
+          }
+        })
+      );
+      const validList = list.filter((restaurant) => {
+        const lat = restaurant?.pos?.latitude;
+        const lng = restaurant?.pos?.longitude;
+        return Number.isFinite(lat) && Number.isFinite(lng);
+      });
 
-      setRestaurants(list);
-      setFilteredRestaurants(list);
+      setRestaurants(validList);
+      setFilteredRestaurants(validList);
     } catch (error) {
       console.error('Error al cargar restaurantes', error);
     } finally {

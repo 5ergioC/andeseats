@@ -10,8 +10,8 @@ import {
   Timestamp,
   getDoc,
   deleteDoc,
-  runTransaction,
-  serverTimestamp
+  serverTimestamp,
+  setDoc
 } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { app } from '../firebase-config';
@@ -254,61 +254,39 @@ const LugarDetail = (props) => {
 
     const db = getFirestore();
     const restaurantRef = doc(db, 'Restaurante', props.ID);
-    const ratingDocRef = doc(restaurantRef, 'ratings', userEmail);
-
-    let updatedAverage = displayRating;
-    let updatedCount = ratingCount;
+    const ratingDocId = userEmail;
+    const ratingDocRef = doc(restaurantRef, 'ratings', ratingDocId);
 
     try {
-      await runTransaction(db, async (transaction) => {
-        const restaurantSnapshot = await transaction.get(restaurantRef);
-        if (!restaurantSnapshot.exists()) {
-          throw new Error('Restaurante no encontrado');
-        }
-
-        const data = restaurantSnapshot.data() ?? {};
-        let total = Number(data.ratingTotal ?? 0);
-        let count = Number(data.ratingCount ?? 0);
-        if (!Number.isFinite(total)) {
-          total = 0;
-        }
-        if (!Number.isFinite(count)) {
-          count = 0;
-        }
-
-        const ratingSnapshot = await transaction.get(ratingDocRef);
-        if (ratingSnapshot.exists()) {
-          const prevValue = Number(ratingSnapshot.data()?.valor ?? 0);
-          total -= prevValue;
-        } else {
-          count += 1;
-        }
-
-        total += value;
-        const average = count > 0 ? total / count : 0;
-
-        transaction.set(ratingDocRef, {
+      await setDoc(
+        ratingDocRef,
+        {
           valor: value,
           email: userEmail,
+          uid: userUid,
           updatedAt: serverTimestamp()
-        });
+        },
+        { merge: true }
+      );
 
-        transaction.update(restaurantRef, {
-          ratingTotal: total,
-          ratingCount: count,
-          rating: average
-        });
-
-        updatedAverage = average;
-        updatedCount = count;
+      const ratingsSnapshot = await getDocs(collection(restaurantRef, 'ratings'));
+      let total = 0;
+      let count = 0;
+      ratingsSnapshot.forEach((ratingSnap) => {
+        const ratingVal = Number(ratingSnap.data()?.valor);
+        if (Number.isFinite(ratingVal)) {
+          total += ratingVal;
+          count += 1;
+        }
       });
+      const average = count > 0 ? total / count : 0;
 
       setUserRating(value);
-      setDisplayRating(updatedAverage);
-      setRatingCount(updatedCount);
+      setDisplayRating(average);
+      setRatingCount(count);
 
       if (typeof props.onRatingUpdated === 'function') {
-        props.onRatingUpdated(props.ID, updatedAverage, updatedCount);
+        props.onRatingUpdated(props.ID, average, count);
       }
     } catch (error) {
       console.error('Error updating rating:', error);
@@ -322,6 +300,16 @@ const LugarDetail = (props) => {
     () => displayRating.toFixed(1),
     [displayRating]
   );
+
+  const contactText =
+    typeof props.Contacto === 'string' ? props.Contacto.trim() : props.Contacto ?? '';
+  const hasContact = Boolean(
+    contactText && !/^no\s+(definido|aplica|disponible)$/i.test(contactText)
+  );
+  const tiposComida =
+    Array.isArray(props.TipoComida) && props.TipoComida.length > 0
+      ? props.TipoComida.filter(Boolean)
+      : [];
 
   return (
     <div className="overlay">
@@ -355,9 +343,11 @@ const LugarDetail = (props) => {
         </div>
         <h3 className="ubicacion">{props.Direccion}</h3>
         <p className="description">{props.Descripcion}</p>
-        <p>
-          <strong>Contacto:</strong> {props.Contacto}
-        </p>
+        {hasContact && (
+          <p>
+            <strong>Contacto:</strong> {contactText}
+          </p>
+        )}
         <p>
           <strong>Precio:</strong> {props.Precio}
         </p>
@@ -368,8 +358,13 @@ const LugarDetail = (props) => {
             <span className="tag">Menu Vegetariano</span>
           )}
           {props.Descuento && (
-            <span className="tag">Descuentos con ticketeras</span>
+            <span className="tag">Descuentos con tiquetera</span>
           )}
+          {tiposComida.map((tipo) => (
+            <span key={tipo} className="tag">
+              {tipo}
+            </span>
+          ))}
         </div>
 
         <h2>Comentarios</h2>
