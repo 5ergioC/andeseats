@@ -48,10 +48,14 @@ const transformFeatureToRestaurant = (feature) => {
     contacto: properties.contacto ?? 'No definido',
     precio: properties.precio ?? 'No definido',
     rating: Number(properties.rating ?? 0),
+    ratingCount: Number(properties.ratingCount ?? 0),
+    ratingTotal: Number(properties.ratingTotal ?? 0),
     domicilios: toBoolean(properties.domicilios),
-    menuVegetariano: toBoolean(properties.menuVegetariano),
+    menuVegetariano: toBoolean(properties.menuVegetariano ?? properties.vegetariano),
+    vegetariano: toBoolean(properties.vegetariano ?? properties.menuVegetariano),
     descuento: toBoolean(properties.descuento),
     tiquetera: toBoolean(properties.tiquetera),
+    tipoComida: Array.isArray(properties.tipoComida) ? properties.tipoComida : [],
     horaApertura: properties.horaApertura ?? 'No definido',
     horaCierre: properties.horaCierre ?? 'No definido',
     coordinates: {
@@ -69,15 +73,17 @@ const toActivePoint = (restaurant) => ({
   Contacto: restaurant.contacto ?? 'No definido',
   Precio: restaurant.precio ?? 'No definido',
   Rating: restaurant.rating ?? 0,
+  RatingCount: restaurant.ratingCount ?? 0,
   Domicilios: restaurant.domicilios ?? false,
-  MenuVegetariano: restaurant.menuVegetariano ?? false,
+  MenuVegetariano:
+    restaurant.menuVegetariano ?? restaurant.vegetariano ?? false,
   Descuento: restaurant.descuento ?? false,
   Tiquetera: restaurant.tiquetera ?? false,
   HoraApertura: restaurant.horaApertura ?? 'No definido',
   HoraCierre: restaurant.horaCierre ?? 'No definido'
 });
 
-const MapLibreOSM = ({ lugares, filtroTipoComida }) => {
+const MapLibreOSM = ({ lugares, filtroTipoComida, reloadRestaurants }) => {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const [activePoint, setActivePoint] = useState(null);
@@ -110,7 +116,13 @@ const MapLibreOSM = ({ lugares, filtroTipoComida }) => {
     const baseList = Array.isArray(lugares) ? lugares : [];
 
     const filteredByTipo = filtroTipoComida
-      ? baseList.filter((l) => l.tipoComida === filtroTipoComida)
+      ? baseList.filter((l) => {
+          const tipo = l.tipoComida;
+          if (Array.isArray(tipo)) {
+            return tipo.includes(filtroTipoComida);
+          }
+          return tipo === filtroTipoComida;
+        })
       : baseList;
 
     const features = filteredByTipo
@@ -156,12 +168,23 @@ const MapLibreOSM = ({ lugares, filtroTipoComida }) => {
             contacto: lugar.contacto ?? 'No definido',
             precio: lugar.precio ?? 'No definido',
             rating: Number(lugar.rating ?? 0),
+            ratingCount: Number(lugar.ratingCount ?? 0),
+            ratingTotal: Number(lugar.ratingTotal ?? 0),
             domicilios: lugar.domicilios ?? lugar.domicilio ?? false,
             menuVegetariano:
-              lugar.menuVegetariano ?? lugar.menu_vegetariano ?? false,
+              lugar.menuVegetariano ??
+              lugar.menu_vegetariano ??
+              lugar.vegetariano ??
+              false,
+            vegetariano:
+              lugar.vegetariano ??
+              lugar.menuVegetariano ??
+              lugar.menu_vegetariano ??
+              false,
             descuento:
               lugar.descuento ?? lugar.ticketera ?? lugar.tiquetera ?? false,
             tiquetera: lugar.tiquetera ?? lugar.ticketera ?? false,
+            tipoComida: Array.isArray(lugar.tipoComida) ? lugar.tipoComida : [],
             horaApertura: lugar.horaApertura ?? 'No definido',
             horaCierre: lugar.horaCierre ?? 'No definido'
           }
@@ -424,6 +447,23 @@ const MapLibreOSM = ({ lugares, filtroTipoComida }) => {
     focusOnCoordinates(restaurant.coordinates.lng, restaurant.coordinates.lat);
   };
 
+  const handleRatingUpdated = (restaurantId, newAverage, newCount) => {
+    setActivePoint((prev) => {
+      if (!prev || prev.ID !== restaurantId) {
+        return prev;
+      }
+      return {
+        ...prev,
+        Rating: newAverage,
+        RatingCount: newCount
+      };
+    });
+
+    if (typeof reloadRestaurants === 'function') {
+      reloadRestaurants();
+    }
+  };
+
   return (
     <>
       <div ref={mapContainer} className="map-container" />
@@ -431,6 +471,7 @@ const MapLibreOSM = ({ lugares, filtroTipoComida }) => {
         <LugarDetail
           {...activePoint}
           SetActivePoint={() => setActivePoint(null)}
+          onRatingUpdated={handleRatingUpdated}
         />
       )}
       <ClusterModal
