@@ -111,9 +111,12 @@ const LugarDetail = (props) => {
   useEffect(() => {
     setDisplayRating(Number(props.Rating ?? 0));
     setRatingCount(Number(props.RatingCount ?? 0));
+  }, [props.Rating, props.RatingCount]);
+
+  useEffect(() => {
     setUserRating(null);
     setHoverRating(null);
-  }, [props.ID, props.Rating, props.RatingCount]);
+  }, [props.ID]);
 
   useEffect(() => {
     const fetchComments = async () => {

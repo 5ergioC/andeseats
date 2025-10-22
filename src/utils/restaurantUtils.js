@@ -45,41 +45,74 @@ const extractCoordinates = (rawPos) => {
   return null;
 };
 
-const stripWrapperChars = (text) =>
-  text.replace(/^[\s[\]"]+|[\s[\]"]+$/g, '').trim();
+const cleanCuisineValue = (raw) => {
+  if (raw === null || raw === undefined) {
+    return '';
+  }
+
+  let text = typeof raw === 'string' ? raw.trim() : String(raw ?? '').trim();
+  if (!text) {
+    return '';
+  }
+
+  // Remove surrounding brackets if the value came stringified
+  if (text.startsWith('[') && text.endsWith(']')) {
+    text = text.slice(1, -1).trim();
+  }
+
+  // Remove surrounding quotes (single or double)
+  text = text.replace(/^['"]+|['"]+$/g, '').trim();
+
+  if (!text) {
+    return '';
+  }
+
+  return text;
+};
 
 export const normalizeCuisineList = (value) => {
+  const reducer = (acc, current) => {
+    const cleaned = cleanCuisineValue(current);
+    if (cleaned) {
+      acc.push(cleaned);
+    }
+    return acc;
+  };
+
   if (Array.isArray(value)) {
-    return value
-      .map((item) =>
-        stripWrapperChars(typeof item === 'string' ? item : String(item ?? ''))
-      )
-      .filter(Boolean);
+    return value.reduce(reducer, []);
   }
 
   if (typeof value === 'string') {
-    const trimmed = stripWrapperChars(value);
+    const trimmed = value.trim();
     if (!trimmed) {
       return [];
     }
 
-    if (!/[;,]/.test(value)) {
-      return [trimmed];
+    // Try parsing JSON array or string if provided
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) {
+        return parsed.reduce(reducer, []);
+      }
+      if (typeof parsed === 'string') {
+        return reducer([], parsed);
+      }
+    } catch {
+      // Ignore parse errors and fallback to manual splitting
     }
 
-    return value
-      .split(/[;,]/)
-      .map((item) => stripWrapperChars(item))
-      .filter(Boolean);
+    if (/[;,]/.test(trimmed)) {
+      return trimmed.split(/[;,]/).reduce(reducer, []);
+    }
+
+    return reducer([], trimmed);
   }
 
   if (value && typeof value === 'object') {
     return Object.values(value)
       .flat()
-      .map((item) =>
-        stripWrapperChars(typeof item === 'string' ? item : String(item ?? ''))
-      )
-      .filter(Boolean);
+      .reduce(reducer, []);
   }
 
   return [];

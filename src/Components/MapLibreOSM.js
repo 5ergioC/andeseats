@@ -453,7 +453,7 @@ const MapLibreOSM = ({ lugares, filtroTipoComida, reloadRestaurants }) => {
     focusOnCoordinates(restaurant.coordinates.lng, restaurant.coordinates.lat, 18.5);
   };
 
-  const handleRatingUpdated = (restaurantId, newAverage, newCount) => {
+const handleRatingUpdated = (restaurantId, newAverage, newCount) => {
     setActivePoint((prev) => {
       if (!prev || prev.ID !== restaurantId) {
         return prev;
@@ -464,10 +464,6 @@ const MapLibreOSM = ({ lugares, filtroTipoComida, reloadRestaurants }) => {
         RatingCount: newCount
       };
     });
-
-    if (typeof reloadRestaurants === 'function') {
-      reloadRestaurants();
-    }
   };
 
   return (
