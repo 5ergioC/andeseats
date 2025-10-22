@@ -11,7 +11,8 @@ import {
   getDoc,
   deleteDoc,
   serverTimestamp,
-  setDoc
+  setDoc,
+  updateDoc
 } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { app } from '../firebase-config';
@@ -187,13 +188,29 @@ const LugarDetail = (props) => {
       const db = getFirestore();
       const restauranteRef = doc(db, 'Restaurante', props.ID);
       const comentariosCollection = collection(db, 'Comentario');
-      await addDoc(comentariosCollection, {
+
+      const existingSnapshot = await getDocs(
+        query(
+          comentariosCollection,
+          where('Restaurante', '==', restauranteRef),
+          where('email', '==', userEmail)
+        )
+      );
+
+      const payload = {
         Contenido: newComment,
         Restaurante: restauranteRef,
         fecha: Timestamp.now(),
         email: userEmail,
         uid: userUid
-      });
+      };
+
+      if (!existingSnapshot.empty) {
+        const existingComment = existingSnapshot.docs[0];
+        await updateDoc(doc(db, 'Comentario', existingComment.id), payload);
+      } else {
+        await addDoc(comentariosCollection, payload);
+      }
 
       setNewComment('');
       setCommentError('');
@@ -371,6 +388,9 @@ const LugarDetail = (props) => {
         </div>
 
         <h2>Comentarios</h2>
+        <p className="comment-hint">
+          Puedes agregar o actualizar tu comentario. Solo el más reciente se guardará.
+        </p>
         <form onSubmit={handleCommentSubmit} className="comentario-form">
           <textarea
             placeholder="Agregar un comentario..."
