@@ -143,6 +143,9 @@
   gap: 20px;
   max-width: min(440px, 100%);
   backdrop-filter: blur(16px);
+  justify-self: center;
+  align-self: center;
+  width: min(420px, 100%);
 }
 
 .auth-panel__header {
