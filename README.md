@@ -6,9 +6,9 @@ Welcome to the official repository of **Andes Eats**, a website designed to reco
 
 Andes Eats is a platform focused on providing restaurant recommendations that fit a limited budget and are located near the University of the Andes. The project was developed entirely using **React**, focusing on component and state management, alongside **Firebase** for backend functionalities.
 
-**Website URL**: [https://www.andeseats.com/](https://www.andeseats.com/)
+**Website URL**: [https://www.andeseats.co/](https://www.andeseats.co/)
 
-![image](https://github.com/user-attachments/assets/e95951ec-8e82-4858-b64b-ec32320e95ea)
+![image](<img width="1880" height="924" alt="image" src="https://github.com/user-attachments/assets/9833492c-0b59-4f63-a77f-3b304d60227d" />)
 
 ## Features
 
