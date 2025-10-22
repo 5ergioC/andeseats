@@ -12,7 +12,7 @@ import logo from '../3.png';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_MIN_LENGTH = 8;
-const CIRCULAR_TEXT = 'AndesEats - Sabor que conecta -  ';
+const CIRCULAR_TEXT = 'ANDESEATS * SABOR QUE CONECTA * ';
 
 const Auth = ({ onLogin }) => {
   const auth = getAuth(app);

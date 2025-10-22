@@ -1,96 +1,102 @@
-import { useEffect, useMemo } from 'react';
-import { motion, useAnimation, useMotionValue } from 'framer-motion';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { animate, motion, useMotionValue } from 'framer-motion';
 import './CircularText.css';
 
 const FULL_TURN = 360;
-
-const getRotationTransition = (duration, from, loop = true) => ({
-  from,
-  to: from + FULL_TURN,
-  ease: 'linear',
-  duration,
-  type: 'tween',
-  repeat: loop ? Infinity : 0,
-  repeatType: 'loop'
-});
-
-const getTransition = (duration, from) => ({
-  rotate: getRotationTransition(duration, from),
-  scale: {
-    type: 'spring',
-    damping: 20,
-    stiffness: 300
-  }
-});
+const MIN_DURATION = 0.1;
 
 const CircularText = ({
   text,
   spinDuration = 20,
-  onHover = 'speedUp',
+  onHover = 'slowDown',
   className = '',
   size
 }) => {
   const letters = useMemo(() => Array.from(text), [text]);
-  const controls = useAnimation();
   const rotation = useMotionValue(0);
+  const scale = useMotionValue(1);
+  const rotationAnimation = useRef(null);
+  const scaleAnimation = useRef(null);
+
   const customSizeVars = useMemo(() => {
     if (!size) return {};
     const sizeValue = typeof size === 'number' ? `${size}px` : String(size);
     return { '--ct-size': sizeValue };
   }, [size]);
 
+  const stopSpin = useCallback(() => {
+    rotationAnimation.current?.stop();
+    rotationAnimation.current = null;
+  }, []);
+
+  const startSpin = useCallback(
+    (duration) => {
+      const start = rotation.get();
+      const resolvedDuration = Math.max(duration, MIN_DURATION);
+      rotationAnimation.current?.stop();
+      rotationAnimation.current = animate(rotation, start + FULL_TURN, {
+        ease: 'linear',
+        duration: resolvedDuration,
+        repeat: Infinity,
+        repeatType: 'loop'
+      });
+    },
+    [rotation]
+  );
+
+  const animateScale = useCallback(
+    (value) => {
+      scaleAnimation.current?.stop();
+      scaleAnimation.current = animate(scale, value, {
+        type: 'spring',
+        damping: 20,
+        stiffness: 300
+      });
+    },
+    [scale]
+  );
+
   useEffect(() => {
-    const start = rotation.get();
-    controls.start({
-      rotate: start + FULL_TURN,
-      scale: 1,
-      transition: getTransition(spinDuration, start)
-    });
-  }, [spinDuration, controls, rotation, text]);
+    startSpin(spinDuration);
+    return () => {
+      stopSpin();
+      scaleAnimation.current?.stop();
+    };
+  }, [spinDuration, startSpin, stopSpin, letters.length]);
 
   const handleHoverStart = () => {
-    const start = rotation.get();
     if (!onHover) return;
 
-    let transitionConfig;
+    let targetDuration = spinDuration;
     let scaleVal = 1;
 
     switch (onHover) {
       case 'slowDown':
-        transitionConfig = getTransition(spinDuration * 2, start);
+        targetDuration = spinDuration * 2;
         break;
       case 'speedUp':
-        transitionConfig = getTransition(Math.max(spinDuration / 2, 0.1), start);
+        targetDuration = Math.max(spinDuration / 2, MIN_DURATION);
         break;
       case 'pause':
-        transitionConfig = {
-          rotate: { type: 'spring', damping: 20, stiffness: 300 },
-          scale: { type: 'spring', damping: 20, stiffness: 300 }
-        };
-        scaleVal = 1;
-        break;
+        stopSpin();
+        animateScale(1);
+        return;
       case 'goBonkers':
-        transitionConfig = getTransition(Math.max(spinDuration / 8, 0.05), start);
+        targetDuration = Math.max(spinDuration / 8, MIN_DURATION);
         scaleVal = 0.85;
         break;
       default:
-        transitionConfig = getTransition(spinDuration, start);
+        targetDuration = spinDuration;
     }
 
-    controls.start({
-      rotate: start + FULL_TURN,
-      scale: scaleVal,
-      transition: transitionConfig
-    });
+    startSpin(targetDuration);
+    animateScale(scaleVal);
   };
 
   const handleHoverEnd = () => {
-    const start = rotation.get();
-    controls.start({
-      rotate: start + FULL_TURN,
-      scale: 1,
-      transition: getTransition(spinDuration, start)
-    });
+    stopSpin();
+    animateScale(1);
+    startSpin(spinDuration);
   };
 
   if (letters.length === 0) {
@@ -102,10 +108,9 @@ const CircularText = ({
       className={`circular-text ${className}`}
       style={{
         rotate: rotation,
+        scale,
         ...customSizeVars
       }}
-      initial={{ rotate: 0 }}
-      animate={controls}
       onMouseEnter={handleHoverStart}
       onMouseLeave={handleHoverEnd}
     >
@@ -114,8 +119,7 @@ const CircularText = ({
         const transform = [
           'translate(-50%, -50%)',
           `rotateZ(${rotationDeg}deg)`,
-          `translate3d(0, calc(-1 * var(--ct-radius)), 0)`,
-          `rotateZ(${180 - rotationDeg}deg)`
+          `translateY(calc(-1 * var(--ct-radius)))`
         ].join(' ');
 
         return (
