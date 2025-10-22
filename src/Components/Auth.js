@@ -128,7 +128,7 @@ const Auth = ({ onLogin }) => {
           <CircularText
             text={CIRCULAR_TEXT}
             spinDuration={18}
-            size="clamp(320px, 58vw, 480px)"
+            size="clamp(240px, 42vw, 320px)"
           />
           <img src={logo} alt="AndesEats" className="auth-hero__logo" />
         </div>

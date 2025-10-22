@@ -1,9 +1,8 @@
 .circular-text {
-  --ct-size: clamp(280px, 52vw, 460px);
-  --ct-track-width: clamp(1px, 0.4vw, 2px);
-  --ct-gap: clamp(18px, 3vw, 28px);
-  --ct-radius: calc(var(--ct-size) / 2 - var(--ct-gap) - var(--ct-track-width) / 2);
-  --ct-shadow: 0 14px 36px rgba(15, 23, 42, 0.35);
+  --ct-size: clamp(240px, 45vw, 420px);
+  --ct-gap: clamp(12px, 2.5vw, 22px);
+  --ct-radius: calc(var(--ct-size) / 2 - var(--ct-gap));
+  --ct-shadow: 0 12px 32px rgba(15, 23, 42, 0.35);
   position: relative;
   width: var(--ct-size);
   height: var(--ct-size);
@@ -20,16 +19,6 @@
   filter: drop-shadow(var(--ct-shadow));
   transition: transform 0.4s ease, filter 0.4s ease;
   will-change: transform;
-}
-
-.circular-text::before {
-  content: '';
-  position: absolute;
-  inset: var(--ct-gap);
-  border-radius: 50%;
-  border: var(--ct-track-width) solid rgba(148, 163, 184, 0.4);
-  backdrop-filter: blur(4px);
-  pointer-events: none;
 }
 
 .circular-text span {
