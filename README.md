@@ -4,7 +4,8 @@ AndesEats is a web app that helps the Universidad de los Andes community discove
 
 **Production URL:** [https://www.andeseats.co/](https://www.andeseats.co/)
 
-![AndesEats preview](https://github.com/user-attachments/assets/9833492c-0b59-4f63-a77f-3b304d60227d)
+![AndesEats Landing preview](https://github.com/user-attachments/assets/9ebc4103-c9ac-4ed2-bd70-255e7cea9d07)
+![AndesEats Map preview](https://github.com/user-attachments/assets/d6d713bf-2575-43a6-b997-be0c9fe510b6)
 
 ## Features
 
