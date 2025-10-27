@@ -17,7 +17,7 @@ const quickFilterConfigs = [
   },
   {
     id: 'descuentos',
-    label: 'Descuentos / tiquetera',
+    label: 'Tiquetera',
     predicate: (restaurant) =>
       normalizeBoolean(
         restaurant.tiquetera ?? restaurant.ticketera ?? restaurant.descuento
