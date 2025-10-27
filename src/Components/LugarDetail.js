@@ -71,6 +71,16 @@ const RatingSelector = ({
   );
 };
 
+const TAB_KEYS = {
+  GENERAL: 'general',
+  REVIEWS: 'opiniones'
+};
+
+const TAB_DEFINITIONS = [
+  { id: TAB_KEYS.GENERAL, label: 'General' },
+  { id: TAB_KEYS.REVIEWS, label: 'Opiniones' }
+];
+
 const LugarDetail = (props) => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
@@ -87,6 +97,7 @@ const LugarDetail = (props) => {
   const [isSubmittingRating, setIsSubmittingRating] = useState(false);
   const [ratingError, setRatingError] = useState('');
   const [commentError, setCommentError] = useState('');
+  const [activeTab, setActiveTab] = useState(TAB_KEYS.GENERAL);
 
   useEffect(() => {
     const email = localStorage.getItem('userEmail') || '';
@@ -117,6 +128,7 @@ const LugarDetail = (props) => {
   useEffect(() => {
     setUserRating(null);
     setHoverRating(null);
+    setActiveTab(TAB_KEYS.GENERAL);
   }, [props.ID]);
 
   useEffect(() => {
@@ -359,108 +371,158 @@ const LugarDetail = (props) => {
           </button>
         </div>
         <div className="info-box__grip" aria-hidden="true" />
-        <h1>{props.Nombre}</h1>
-        <div className="rating-summary">
-          <Stars rating={displayRating} />
-          <div className="rating-summary__meta">
-            <span className="rating-summary__value">{formattedAverage}</span>
-            <span className="rating-summary__count">
-              ({ratingCount}{' '}
-              {ratingCount === 1 ? 'calificacion' : 'calificaciones'})
-            </span>
+        <header className="info-box__header">
+          <h1>{props.Nombre}</h1>
+          <div className="rating-summary">
+            <Stars rating={displayRating} />
+            <div className="rating-summary__meta">
+              <span className="rating-summary__value">{formattedAverage}</span>
+              <span className="rating-summary__count">
+                ({ratingCount}{' '}
+                {ratingCount === 1 ? 'calificacion' : 'calificaciones'})
+              </span>
+            </div>
+          </div>
+        </header>
+        <div
+          className="info-box__tabs"
+          role="tablist"
+          aria-label="Secciones del restaurante"
+        >
+          {TAB_DEFINITIONS.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                id={`info-box-tab-${tab.id}`}
+                className={`info-box__tab ${isActive ? 'is-active' : ''}`}
+                role="tab"
+                aria-selected={isActive}
+                aria-controls={`info-box-panel-${tab.id}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+        <div className="info-box__panels">
+          <div
+            id="info-box-panel-general"
+            role="tabpanel"
+            aria-labelledby="info-box-tab-general"
+            hidden={activeTab !== TAB_KEYS.GENERAL}
+            className={`info-box__panel-content info-box__panel-content--general${
+              activeTab === TAB_KEYS.GENERAL ? ' is-active' : ''
+            }`}
+          >
+            <h3 className="ubicacion">{props.Direccion}</h3>
+            <p className="description">{props.Descripcion}</p>
+            {hasContact && (
+              <p>
+                <strong>Contacto:</strong> {contactText}
+              </p>
+            )}
+            <p>
+              <strong>Precio:</strong> {props.Precio}
+            </p>
+
+            <div className="tags">
+              {props.Domicilios && <span className="tag">Domicilios</span>}
+              {props.MenuVegetariano && (
+                <span className="tag">Menu Vegetariano</span>
+              )}
+              {props.Descuento && (
+                <span className="tag">Descuentos con tiquetera</span>
+              )}
+              {tiposComida.map((tipo) => (
+                <span key={tipo} className="tag">
+                  {tipo}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div
+            id="info-box-panel-opiniones"
+            role="tabpanel"
+            aria-labelledby="info-box-tab-opiniones"
+            hidden={activeTab !== TAB_KEYS.REVIEWS}
+            className={`info-box__panel-content info-box__panel-content--reviews${
+              activeTab === TAB_KEYS.REVIEWS ? ' is-active' : ''
+            }`}
+          >
+            <div className="rating-section">
+              <p className="rating-section__label">
+                Tu calificacion:{' '}
+                <span className="rating-section__current">
+                  {userRating ? `${userRating}/5` : 'sin evaluar'}
+                </span>
+              </p>
+              <RatingSelector
+                value={userRating}
+                hoverValue={hoverRating}
+                onSelect={handleRatingSelect}
+                onHover={setHoverRating}
+                disabled={isSubmittingRating}
+              />
+              {ratingError && <p className="error">{ratingError}</p>}
+            </div>
+            <h2 className="panel-title">Comentarios</h2>
+            <p className="comment-hint">
+              Puedes agregar o actualizar tu comentario. Solo el mas reciente se
+              guardara.
+            </p>
+            <form onSubmit={handleCommentSubmit} className="comentario-form">
+              <textarea
+                placeholder="Agregar un comentario..."
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                required
+              />
+              <button className="add-comment-btn" type="submit">
+                Enviar
+              </button>
+            </form>
+
+            <div className="comentarios-section">
+              {comments.length > 0 ? (
+                comments.map((comment) => (
+                  <div key={comment.id} className="comment">
+                    <p>{comment.Contenido}</p>
+                    <small>
+                      {comment.email}
+                      {comment.fecha?.toDate
+                        ? ` - ${comment.fecha.toDate().toLocaleString()}`
+                        : ''}
+                    </small>
+                    {(userUid && comment.uid && userUid === comment.uid) ||
+                    (userEmail &&
+                      userEmail.trim().toLowerCase() ===
+                        (comment.email ?? '').trim().toLowerCase()) ? (
+                      <button
+                        type="button"
+                        className="comment-delete"
+                        onClick={() =>
+                          handleDeleteComment(
+                            comment.id,
+                            comment.email,
+                            comment.uid
+                          )
+                        }
+                      >
+                        Eliminar
+                      </button>
+                    ) : null}
+                  </div>
+                ))
+              ) : (
+                <p>No hay comentarios.</p>
+              )}
+              {commentError && <p className="error">{commentError}</p>}
+            </div>
           </div>
         </div>
-        <div className="rating-section">
-          <p className="rating-section__label">
-            Tu calificacion:{' '}
-            <span className="rating-section__current">
-              {userRating ? `${userRating}/5` : 'sin evaluar'}
-            </span>
-          </p>
-          <RatingSelector
-            value={userRating}
-            hoverValue={hoverRating}
-            onSelect={handleRatingSelect}
-            onHover={setHoverRating}
-            disabled={isSubmittingRating}
-          />
-          {ratingError && <p className="error">{ratingError}</p>}
-        </div>
-        <h3 className="ubicacion">{props.Direccion}</h3>
-        <p className="description">{props.Descripcion}</p>
-        {hasContact && (
-          <p>
-            <strong>Contacto:</strong> {contactText}
-          </p>
-        )}
-        <p>
-          <strong>Precio:</strong> {props.Precio}
-        </p>
-
-        <div className="tags">
-          {props.Domicilios && <span className="tag">Domicilios</span>}
-          {props.MenuVegetariano && (
-            <span className="tag">Menu Vegetariano</span>
-          )}
-          {props.Descuento && (
-            <span className="tag">Descuentos con tiquetera</span>
-          )}
-          {tiposComida.map((tipo) => (
-            <span key={tipo} className="tag">
-              {tipo}
-            </span>
-          ))}
-        </div>
-
-        <h2>Comentarios</h2>
-        <p className="comment-hint">
-          Puedes agregar o actualizar tu comentario. Solo el más reciente se guardará.
-        </p>
-        <form onSubmit={handleCommentSubmit} className="comentario-form">
-          <textarea
-            placeholder="Agregar un comentario..."
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            required
-          />
-          <button className="add-comment-btn" type="submit">
-            Enviar
-          </button>
-        </form>
-
-        <div className="comentarios-section">
-          {comments.length > 0 ? (
-            comments.map((comment) => (
-              <div key={comment.id} className="comment">
-                <p>{comment.Contenido}</p>
-                <small>
-                  {comment.email}
-                  {comment.fecha?.toDate
-                    ? ` - ${comment.fecha.toDate().toLocaleString()}`
-                    : ''}
-                </small>
-                {(userUid && comment.uid && userUid === comment.uid) ||
-                (userEmail &&
-                  userEmail.trim().toLowerCase() ===
-                    (comment.email ?? '').trim().toLowerCase()) ? (
-                  <button
-                    type="button"
-                    className="comment-delete"
-                    onClick={() =>
-                      handleDeleteComment(comment.id, comment.email, comment.uid)
-                    }
-                  >
-                    Eliminar
-                  </button>
-                ) : null}
-              </div>
-            ))
-          ) : (
-            <p>No hay comentarios.</p>
-          )}
-          {commentError && <p className="error">{commentError}</p>}
-        </div>
-
       </div>
     </div>
   );
